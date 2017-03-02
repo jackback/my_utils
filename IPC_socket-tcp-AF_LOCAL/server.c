@@ -14,7 +14,7 @@
  * The socket code doesn't require null termination on the filename, but 
  * we do it anyway so string functions work. 
  */
- 
+
 int makeAddr(const char* name, struct sockaddr_un* pAddr, socklen_t* pSockLen)
 {
     int nameLen = strlen(name);
@@ -40,6 +40,15 @@ int main()
     //unlink("server_socket");
     //create socket
     server_sockfd = socket(AF_UNIX, SOCK_STREAM, 0);
+
+#if REUSE_SOCKET
+    //设置套接字选项避免地址使用错误  
+    int on = 1;
+    if((setsockopt(server_sockfd, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on))) < 0){
+        printf("setsockopt failed");
+        exit(EXIT_FAILURE);
+    }
+#endif
 
     //name the socket
     server_addr.sun_family = AF_UNIX;
